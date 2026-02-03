@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Werewolf Moderator Tool</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts: Kanit (Thai), Creepster (Title) -->
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Kanit:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Favicon -->
+    <link rel="icon" href="favicon.png" type="image/png">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Kanit', 'sans-serif'],
+                        horror: ['Creepster', 'cursive'],
+                    },
+                    colors: {
+                        midnight: '#0f0c29',
+                        forest: '#302b63',
+                        blood: '#ff0033',
+                        gold: '#ffd700',
+                        magic: '#00d2ff',
+                    },
+                    backgroundImage: {
+                        'wolf-pattern': "linear-gradient(to bottom, #0f0c29, #302b63, #24243e)",
+                        'card-gradient': "linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)",
+                    }
+                }
+            }
+        }
+    </script>
+
+
+</head>
+
+<body class="min-h-screen flex flex-col items-center p-4 pb-24 selection:bg-purple-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="w-full max-w-md text-center mb-6 pt-4 relative z-10">
+        <div class="mb-2">
+            <i class="fas fa-moon text-yellow-100 text-4xl animate-pulse absolute top-4 left-4 opacity-20"></i>
+            <h1
+                class="font-horror text-5xl text-red-600 tracking-widest text-glow-red transform -rotate-2 inline-block">
+                WEREWOLF
+            </h1>
+        </div>
+        <div class="inline-block bg-black/40 px-3 py-1 rounded-full border border-white/10 backdrop-blur-sm">
+            <p class="text-xs text-blue-300 font-bold tracking-wider uppercase">Moderator System</p>
+        </div>
+
+        <button onclick="openSoundModal()"
+            class="absolute right-12 top-4 text-xs text-gray-500 hover:text-purple-400 p-2 transition-colors"
+            title="Sound Settings">
+            <i class="fas fa-volume-up text-lg"></i>
+        </button>
+        <button onclick="clearSaveData()"
+            class="absolute right-0 top-4 text-xs text-gray-500 hover:text-red-400 p-2 transition-colors"
+            title="Reset Game">
+            <i class="fas fa-power-off text-lg"></i>
+        </button>
+    </header>
+
+    <div class="w-full max-w-md relative z-10">
+
+        <!-- ================= RESTORE PROMPT ================= -->
+        <div id="restore-prompt"
+            class="hidden mb-6 game-card rounded-xl p-6 text-center fade-in border-l-4 border-blue-500">
+            <div class="text-4xl mb-2">💾</div>
+            <h3 class="text-xl font-bold text-white mb-2">พบเซฟเกมเก่า</h3>
+            <p class="text-gray-300 text-sm mb-4">คุณต้องการเล่นต่อจากเดิมหรือไม่?</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="confirmRestore()"
+                    class="btn-game bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold shadow-lg w-full">เล่นต่อ</button>
+                <button onclick="discardSave()"
+                    class="btn-game bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-bold shadow-lg w-full">ลบทิ้ง</button>
+            </div>
+        </div>
+
+        <!-- ================= SECTION 1: SETUP ================= -->
+        <div id="setup-screen" class="fade-in space-y-6">
+
+            <!-- 1.1 PLAYER POOL -->
+            <div class="game-card p-5 rounded-2xl shadow-xl">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400">
+                        <i class="fas fa-address-book"></i>
+                    </div>
+                    <h2 class="text-lg font-bold text-green-400">รายชื่อผู้เล่น (Pool)</h2>
+                </div>
+
+                <div class="flex gap-2 mb-4 relative">
+                    <input type="text" id="pool-input-name" placeholder="พิมพ์ชื่อผู้เล่น..."
+                        class="flex-1 bg-gray-900/80 border-2 border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 focus:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all placeholder-gray-500 text-white"
+                        onkeypress="handlePoolEnter(event)">
+                    <button onclick="addNameToPool()"
+                        class="btn-game bg-green-600 hover:bg-green-500 text-white px-4 rounded-xl font-bold shadow-lg">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <div id="name-pool-list"
+                    class="flex flex-wrap gap-2 max-h-32 overflow-y-auto custom-scrollbar p-1 min-h-[40px]">
+                    <span class="text-gray-500 text-xs italic w-full text-center py-2">ว่างเปล่า...</span>
+                </div>
+                <div class="text-right mt-2">
+                    <button onclick="clearNamePool()"
+                        class="text-xs text-red-400/70 hover:text-red-400 transition-colors">
+                        <i class="fas fa-trash-alt mr-1"></i>ล้างรายชื่อ
+                    </button>
+                </div>
+            </div>
+
+            <!-- 1.2 ROLE SELECTION -->
+            <div class="game-card p-5 rounded-2xl shadow-xl">
+                <div class="flex justify-between items-center mb-4 border-b border-gray-700/50 pb-2">
+                    <div class="flex items-center gap-2">
+                        <div
+                            class="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center text-yellow-400 text-lg">
+                            🎭
+                        </div>
+                        <h2 class="text-lg font-bold text-yellow-400">เลือกบทบาท</h2>
+                    </div>
+                    <div class="bg-gray-900/80 px-3 py-1 rounded-lg border border-gray-700">
+                        <span class="text-xs text-gray-400">ผู้เล่น:</span>
+                        <span id="role-count-badge" class="text-white font-bold text-lg ml-1">0</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 mb-4">
+                    <div class="relative flex-1">
+                        <select id="input-role"
+                            class="w-full appearance-none bg-gray-900/80 border-2 border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-yellow-500 cursor-pointer">
+                            <optgroup label="--- ฝั่งชาวบ้าน (Villager) ---">
+                                <option value="Villager">👨‍🌾 ชาวบ้าน (Villager)</option>
+                                <option value="Seer">🔮 เทพพยากรณ์ (Seer)</option>
+                                <option value="Spellcaster">🤐 จอมเวท (Spellcaster)</option>
+                                <option value="Cupid">💘 กามเทพ (Cupid)</option>
+                                <option value="Bodyguard">🛡️ บอดี้การ์ด (Bodyguard)</option>
+                                <option value="AuraSeer">✨ ญาณทิพย์ (Aura Seer)</option>
+                                <option value="Drunk">🍺 ขี้เมา (Drunk)</option>
+                                <option value="Prince">👑 เจ้าชาย (Prince)</option>
+                                <option value="Priest">✝️ นักบวช (Priest)</option>
+                                <option value="PI">🕵️ นักสืบเรื่องลี้ลับ (P.I.)</option>
+                                <option value="Troublemaker">🤪 ตัวป่วน (Troublemaker)</option>
+                                <option value="Witch">🧙‍♀️ แม่มด (Witch)</option>
+                                <option value="OldHag">👵 แม่หมอ (Old Hag)</option>
+                                <option value="ApprenticeSeer">🎓 ศิษย์เทพพยากรณ์</option>
+                                <option value="Mayor">🎖️ นายกเทศมนตรี (Mayor)</option>
+                                <option value="Hunter">🔫 นายพราน (Hunter)</option>
+                                <option value="Disease">🤢 ผู้ป่วยติดเชื้อ (Disease)</option>
+                                <option value="Pacifist">☮️ ผู้รักสันติ (Pacifist)</option>
+                                <option value="Ghost">👻 พรายกระซิบ (Ghost)</option>
+                                <option value="Mason">👷 ภราดรแห่งเมสัน (Mason)</option>
+                                <option value="Doppelganger">🎭 ภูตจำแลง (Doppelganger)</option>
+                                <option value="Lycan">🐺 ลูกครึ่งมนุษย์หมาป่า (Lycan)</option>
+                                <option value="ToughGuy">💪 หนุ่มถึก (Tough Guy)</option>
+                                <option value="Idiot">🤪 ไอ้ทึ่ม (Villager Idiot)</option>
+                            </optgroup>
+                            <optgroup label="--- ฝั่งหมาป่า (Werewolf) ---">
+                                <option value="Werewolf">🐺 มนุษย์หมาป่า (Werewolf)</option>
+                                <option value="LoneWolf">🌑 หมาป่าเดียวดาย (Lone Wolf)</option>
+                                <option value="WolfCub">🐾 ลูกมนุษย์หมาป่า (Wolf Cub)</option>
+                                <option value="Minion">😈 สมุนรับใช้ (Minion)</option>
+                                <option value="Sorcerer">🦹‍♀️ นางปีศาจ (Sorcerer)</option>
+                                <option value="Hoodlum">👊 อันธพาล (Hoodlum)</option>
+                                <option value="Cursed">🧟 ผู้ต้องคำสาป (Cursed)</option>
+                            </optgroup>
+                            <optgroup label="--- อื่นๆ (Neutral) ---">
+                                <option value="SerialKiller">🔪 ฆาตกร (Serial Killer)</option>
+                                <option value="Fool">🃏 คนบ้า (Fool)</option>
+                                <option value="Medium">🕯️ คนทรง (Medium)</option>
+                            </optgroup>
+                        </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <button onclick="addRole()"
+                        class="btn-game bg-blue-600 hover:bg-blue-500 text-white px-5 rounded-xl font-bold shadow-lg">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- Role List -->
+                <div id="player-list" class="space-y-2 max-h-[40vh] overflow-y-auto mb-4 custom-scrollbar pr-1">
+                    <div
+                        class="text-center text-gray-500 text-sm py-6 border-2 border-dashed border-gray-700/50 rounded-xl bg-black/20">
+                        ยังไม่ได้เลือกบทบาท
+                    </div>
+                </div>
+
+                <!-- Role Presets -->
+                <div class="border-t border-gray-700/50 pt-4 mt-2 mb-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fas fa-bookmark text-yellow-400"></i>
+                        <span class="text-sm font-bold text-yellow-400">ชุดบทบาทที่บันทึก</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <div class="flex-1 relative">
+                            <select id="preset-select"
+                                class="w-full appearance-none bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:border-yellow-500 focus:outline-none">
+                                <option value="">-- เลือกชุดบทบาท --</option>
+                            </select>
+                            <div
+                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                        <button onclick="loadPreset()"
+                            class="bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-2 rounded-lg"
+                            title="โหลดชุดบทบาท">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button onclick="savePreset()"
+                            class="bg-green-600 hover:bg-green-500 text-white px-3 py-2 rounded-lg"
+                            title="บันทึกชุดบทบาท">
+                            <i class="fas fa-save"></i>
+                        </button>
+                        <button onclick="deletePreset()"
+                            class="bg-red-600/50 hover:bg-red-600 text-white px-3 py-2 rounded-lg" title="ลบชุดบทบาท">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-700/50 pt-4 mt-2 flex gap-3">
+                    <button onclick="showRoleGuide()"
+                        class="bg-gray-700 hover:bg-gray-600 text-gray-300 font-bold py-3 px-4 rounded-xl shadow-lg text-sm border border-gray-600 transition-colors">
+                        <i class="fas fa-book-open"></i>
+                    </button>
+                    <button onclick="startDrawScreen()"
+                        class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg text-sm transition-colors">
+                        🎴 จับไพ่
+                    </button>
+                    <button onclick="startGame()"
+                        class="flex-1 btn-game bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-green-900/50 text-lg tracking-wide">
+                        เริ่มเกม <i class="fas fa-play ml-2 text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SECTION: DRAW SCREEN ================= -->
+        <div id="draw-screen" class="hidden fade-in space-y-6">
+            <div class="game-card p-0 rounded-2xl shadow-2xl border-purple-500/30 border overflow-hidden">
+                <!-- Draw Header -->
+                <div
+                    class="bg-gradient-to-r from-purple-900 to-pink-900 p-4 border-b border-purple-500/30 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-black/30 p-2 rounded-lg text-2xl">🎴</div>
+                        <div>
+                            <h2 class="text-xl font-bold text-white leading-none">จับไพ่บทบาท</h2>
+                            <p class="text-xs text-purple-300">แตะการ์ดเพื่อดูบทบาท</p>
+                        </div>
+                    </div>
+                    <button onclick="exitDrawScreen()"
+                        class="bg-black/30 hover:bg-black/50 text-gray-300 px-3 py-1.5 rounded-lg text-xs transition-colors border border-white/10">
+                        <i class="fas fa-arrow-left mr-1"></i> กลับ
+                    </button>
+                </div>
+
+                <!-- Draw Cards Container -->
+                <div class="p-5">
+                    <div class="mb-4 text-center">
+                        <span class="text-gray-400 text-sm">การ์ดที่เหลือ: </span>
+                        <span id="cards-remaining" class="text-purple-400 font-bold text-lg">0</span>
+                    </div>
+
+                    <div id="draw-cards-container" class="grid grid-cols-3 gap-3 mb-4">
+                        <!-- Cards will be rendered here -->
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="shuffleDrawCards()"
+                            class="flex-1 bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl font-bold transition-colors">
+                            🔀 สับไพ่ใหม่
+                        </button>
+                        <button onclick="resetDrawCards()"
+                            class="bg-gray-700 hover:bg-gray-600 text-gray-300 py-3 px-4 rounded-xl font-bold transition-colors">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Card Modal -->
+            <div id="card-reveal-modal"
+                class="hidden fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                <div class="text-center">
+                    <div id="revealed-card"
+                        class="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-2xl p-8 border-2 border-purple-400 shadow-2xl shadow-purple-500/50 transform transition-all duration-500 scale-100">
+                        <div class="text-6xl mb-4" id="revealed-emoji">🐺</div>
+                        <div class="text-2xl font-bold text-white mb-2" id="revealed-role">หมาป่า</div>
+                        <div class="text-sm text-purple-300" id="revealed-team">ฝั่งหมาป่า</div>
+                    </div>
+                    <button onclick="hideCardReveal()"
+                        class="mt-6 bg-gray-700 hover:bg-gray-600 text-white px-8 py-3 rounded-xl font-bold transition-colors">
+                        <i class="fas fa-eye-slash mr-2"></i>ซ่อน
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SECTION 2: NIGHT PHASE ================= -->
+        <div id="night-screen" class="hidden fade-in space-y-6">
+            <div class="game-card p-0 rounded-2xl shadow-2xl border-purple-500/30 border overflow-hidden">
+                <!-- Night Header -->
+                <div
+                    class="bg-gradient-to-r from-purple-900 to-indigo-900 p-4 border-b border-purple-500/30 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-black/30 p-2 rounded-lg">
+                            <i class="fas fa-moon text-yellow-300 text-xl text-glow-gold"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-white leading-none">Night Phase</h2>
+                            <p class="text-xs text-purple-300">คืนที่ <span id="night-count"
+                                    class="font-bold text-lg text-white">1</span></p>
+                        </div>
+                    </div>
+                    <button onclick="showGameLog()"
+                        class="bg-black/30 hover:bg-black/50 text-gray-300 px-3 py-1.5 rounded-lg text-xs transition-colors border border-white/10">
+                        <i class="fas fa-history mr-1"></i> Log
+                    </button>
+                </div>
+
+                <div class="p-5">
+                    <!-- DYNAMIC ACTIONS -->
+                    <div id="night-actions-container" class="space-y-4 mb-6"></div>
+
+                    <!-- Note -->
+                    <div id="note-section" class="mb-6 hidden">
+                        <div class="relative">
+                            <textarea id="night-note" rows="2" placeholder="บันทึกเหตุการณ์เพิ่มเติม..."
+                                class="w-full bg-gray-900/50 border border-gray-600 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-purple-500 resize-none"></textarea>
+                            <i class="fas fa-pen absolute right-3 bottom-3 text-gray-600 text-xs"></i>
+                        </div>
+                    </div>
+
+                    <button onclick="processNight()" id="night-action-btn"
+                        class="w-full btn-game bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-purple-900/50 text-lg">
+                        ดำเนินการต่อ <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SECTION 3: DAY PHASE ================= -->
+        <div id="day-screen" class="hidden fade-in space-y-6">
+            <!-- Result Card -->
+            <div class="game-card p-0 rounded-2xl shadow-2xl border-yellow-500/30 border overflow-hidden">
+                <div
+                    class="bg-gradient-to-r from-yellow-900 to-orange-900 p-4 border-b border-yellow-500/30 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-black/30 p-2 rounded-lg">
+                            <i class="fas fa-sun text-yellow-400 text-xl text-glow-gold animate-spin-slow"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-white leading-none">Day Phase</h2>
+                            <p class="text-xs text-yellow-200/80">เช้าวันใหม่</p>
+                        </div>
+                    </div>
+                    <button onclick="showGameLog()"
+                        class="bg-black/30 hover:bg-black/50 text-gray-300 px-3 py-1.5 rounded-lg text-xs transition-colors border border-white/10">
+                        <i class="fas fa-history mr-1"></i> Log
+                    </button>
+                </div>
+
+                <div class="p-6 text-center">
+                    <div id="death-result"
+                        class="bg-black/20 rounded-xl p-4 mb-4 border border-white/5 min-h-[80px] flex items-center justify-center flex-col text-sm font-medium text-gray-200">
+                        <!-- JS Content -->
+                    </div>
+                    <div
+                        class="inline-block bg-gray-800/80 px-4 py-1 rounded-full border border-gray-600 text-xs text-gray-400">
+                        ผู้รอดชีวิต: <span id="alive-count" class="text-green-400 font-bold text-sm ml-1">0</span> คน
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timer Card -->
+            <div class="game-card p-5 rounded-2xl shadow-xl text-center relative overflow-hidden">
+                <div
+                    class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50">
+                </div>
+
+                <button onclick="showModScript()"
+                    class="absolute top-3 right-3 bg-gray-700/80 hover:bg-gray-600 text-gray-300 px-3 py-1.5 rounded-lg text-xs transition-colors border border-gray-600/50">
+                    <i class="fas fa-microphone mr-1"></i> บทพูด
+                </button>
+
+                <h3 class="text-blue-300 text-xs font-bold uppercase tracking-[0.2em] mb-2 opacity-70">Discussion Time
+                </h3>
+                <div id="timer-display"
+                    class="font-mono text-6xl font-bold text-white mb-6 tabular-nums text-glow-blue tracking-tighter">
+                    03:00</div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <button onclick="startTimer()"
+                        class="btn-game bg-gray-700 hover:bg-green-600 text-white rounded-lg font-bold py-2 transition-colors"><i
+                            class="fas fa-play"></i></button>
+                    <button onclick="pauseTimer()"
+                        class="btn-game bg-gray-700 hover:bg-yellow-600 text-white rounded-lg font-bold py-2 transition-colors"><i
+                            class="fas fa-pause"></i></button>
+                    <button onclick="resetTimer()"
+                        class="btn-game bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold py-2 transition-colors"><i
+                            class="fas fa-redo"></i></button>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-1 gap-4">
+                <button id="vote-btn" onclick="showVoteModal()"
+                    class="btn-game bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-red-900/40 text-lg flex items-center justify-center gap-3">
+                    <i class="fas fa-gavel text-xl"></i> โหวตประหาร
+                </button>
+                <button onclick="showStatusModal()"
+                    class="text-sm text-gray-400 hover:text-white underline transition-colors">
+                    ตรวจสอบสถานะผู้เล่นทั้งหมด
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= MODALS ================= -->
+        <!-- (Old Vote Modal Removed) -->
+
+        <!-- Status Modal -->
+        <div id="status-modal"
+            class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm fade-in">
+            <div class="game-card w-full max-w-sm h-[80vh] flex flex-col rounded-2xl p-6 border border-blue-500/30">
+                <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-700">
+                    <h3 class="text-xl font-bold text-white">สถานะผู้เล่น</h3>
+                    <button onclick="closeStatusModal()"
+                        class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-300 hover:bg-gray-600"><i
+                            class="fas fa-times"></i></button>
+                </div>
+                <div id="modal-player-list" class="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-1"></div>
+            </div>
+        </div>
+
+        <!-- Game Log Modal -->
+        <div id="log-modal"
+            class="hidden fixed inset-0 z-[75] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm fade-in">
+            <div class="game-card w-full max-w-md h-[80vh] flex flex-col rounded-2xl p-6 border border-gray-600">
+                <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-700">
+                    <h3 class="text-xl font-bold text-white"><i
+                            class="fas fa-scroll mr-2 text-yellow-500"></i>บันทึกเหตุการณ์</h3>
+                    <button onclick="closeGameLog()"
+                        class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-300 hover:bg-gray-600"><i
+                            class="fas fa-times"></i></button>
+                </div>
+                <div id="game-log-list"
+                    class="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-2 text-sm text-gray-300"></div>
+            </div>
+        </div>
+
+        <!-- Role Guide Modal -->
+        <div id="role-guide-modal"
+            class="hidden fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md fade-in overflow-y-auto">
+            <div class="game-card w-full max-w-4xl rounded-2xl p-4 sm:p-6 border border-green-500/30 my-auto">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-700">
+                    <h3 class="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fas fa-book-open text-green-400"></i>
+                        <span>คู่มือบทบาท</span>
+                    </h3>
+                    <button onclick="closeRoleGuide()"
+                        class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-gray-300 transition-colors">
+                        <i class="fas fa-times text-sm sm:text-base"></i>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto custom-scrollbar pr-1 max-h-[70vh] sm:max-h-[75vh]">
+
+                    <!-- Villagers -->
+                    <div class="mb-4 sm:mb-6">
+                        <h4
+                            class="text-base sm:text-lg font-bold text-blue-400 mb-2 sm:mb-3 flex items-center gap-2 pb-2 border-b border-blue-500/30">
+                            <i class="fas fa-user-shield"></i>
+                            ฝ่ายชาวบ้าน (Villagers)
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">👨‍🌾 ชาวบ้าน <span
+                                        class="text-green-400">[+1]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ไล่ล่าหมาป่าให้เจอและกำจัด</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🔮 เทพพยากรณ์ (Seer) <span
+                                        class="text-green-400">[+7]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ตรวจสอบผู้เล่นคืนละ 1 คน
+                                    ว่าเป็นหมาป่าหรือไม่</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🛡️ บอดี้การ์ด (Bodyguard)
+                                    <span class="text-green-400">[+3]</span>
+                                </div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ปกป้อง 1 คนไม่ให้ถูกฆ่า
+                                    (ห้ามซ้ำ/ห้ามตัวเอง)</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🔫 นายพราน (Hunter) <span
+                                        class="text-green-400">[+3]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ตายแล้วสามารถยิงคนหนึ่งตามได้ทันที
+                                </div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">👑 เจ้าชาย (Prince) <span
+                                        class="text-green-400">[+3]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">รอดจากการโหวต 1 ครั้ง และเผยตัว
+                                </div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🧙 แม่มด (Witch) <span
+                                        class="text-green-400">[+4]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">มียาชุบ 1 ขวด และยาฆ่า 1 ขวด</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">💪 หนุ่มถึก (Tough Guy) <span
+                                        class="text-green-400">[+3]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ถูกกัดไม่ตายทันที ตายคืนถัดไป</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🐺 ลูกครึ่ง (Lycan) <span
+                                        class="text-yellow-400">[-1]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ชาวบ้าน แต่เทพเห็นเป็นหมาป่า</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">👁️ ญาณทิพย์ (Aura Seer) <span
+                                        class="text-green-400">[+3]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ตรวจว่าเป็นตัวละครพิเศษหรือไม่</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">💘 กามเทพ (Cupid) <span
+                                        class="text-yellow-400">[-3]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">คืนแรกเลือก 2 คนเป็นคู่รัก (ตายตาม)
+                                </div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🤐 จอมเวท (Spellcaster) <span
+                                        class="text-green-400">[+1]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">สาป 1 คนห้ามพูดในวันถัดไป</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">✝️ นักบวช (Priest) <span
+                                        class="text-green-400">[+3]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">คุ้มครอง 1 คนรอดตาย 1 ครั้ง/เกม
+                                </div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🕵️ นักสืบ (P.I.) <span
+                                        class="text-green-400">[+3]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ตรวจ 3 คนพร้อมกันว่ามีหมาป่าหรือไม่
+                                    (1 ครั้ง/เกม)</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🤪 ตัวป่วน (Troublemaker)
+                                    <span class="text-yellow-400">[-3]</span>
+                                </div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ป่วนหมู่บ้านให้โหวต 2 คนในวันนั้น (1
+                                    ครั้ง/เกม)</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">👵 แม่หมอ (Old Hag) <span
+                                        class="text-green-400">[+1]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ไล่ 1 คนออกจากหมู่บ้าน 1 วัน
+                                    (ห้ามโหวต)</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🎓 ศิษย์เทพฯ (Apprentice Seer)
+                                    <span class="text-green-400">[+4]</span>
+                                </div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">กลายเป็นเทพพยากรณ์เมื่อเทพตาย</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🎖️ นายกฯ (Mayor) <span
+                                        class="text-green-400">[+2]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">โหวตนับเป็น 2 เสียง</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🤢 ผู้ป่วยติดเชื้อ (Disease)
+                                    <span class="text-green-400">[+3]</span>
+                                </div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ถูกหมาป่าฆ่า = หมาป่างดฆ่าคืนถัดไป
+                                </div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">☮️ ผู้รักสันติ (Pacifist)
+                                    <span class="text-yellow-400">[-1]</span>
+                                </div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ต้องโหวตให้รอดเสมอ</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">👻 พรายกระซิบ (Ghost) <span
+                                        class="text-green-400">[+2]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ตายคืนแรก ส่งข้อความวันละ 1 ตัวอักษร
+                                </div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">👷 ภราดร (Mason) <span
+                                        class="text-green-400">[+2]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">รู้จักภราดรด้วยกัน (ต้องมี 2+ คน)
+                                </div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🎭 ภูตจำแลง (Doppelganger)
+                                    <span class="text-yellow-400">[-2]</span>
+                                </div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">เลือก 1 คน
+                                    เมื่อตายจะสวมรอยเป็นบทบาทนั้น</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🍺 ขี้เมา (Drunk) <span
+                                        class="text-green-400">[+4]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ไม่รู้บทบาทจนกว่าคืนที่ 3 (Mod
+                                    สุ่มให้)</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🤪 ไอ้ทึ่ม (Villager Idiot)
+                                    <span class="text-green-400">[+2]</span>
+                                </div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ต้องโหวตให้ถูกกำจัดเสมอ</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Werewolves -->
+                    <div class="mb-4 sm:mb-6">
+                        <h4
+                            class="text-base sm:text-lg font-bold text-red-400 mb-2 sm:mb-3 flex items-center gap-2 pb-2 border-b border-red-500/30">
+                            <i class="fas fa-paw"></i>
+                            ฝ่ายหมาป่า (Werewolves)
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🐺 หมาป่า (Werewolf) <span
+                                        class="text-red-400">[-6]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ตื่นกับเพื่อน เลือกฆ่า 1 คนทุกคืน
+                                </div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🌑 หมาป่าเดียวดาย (Lone Wolf)
+                                    <span class="text-red-400">[-5]</span>
+                                </div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ชนะเมื่อรอดเป็นคนสุดท้ายเท่านั้น
+                                </div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🐾 ลูกหมาป่า (Wolf Cub) <span
+                                        class="text-red-400">[-8]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ตายแล้ว หมาป่าฆ่า 2 คนคืนถัดไป</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">😈 สมุนรับใช้ (Minion) <span
+                                        class="text-red-400">[-6]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">รู้ว่าใครเป็นหมาป่า ไม่ได้ตื่นฆ่า
+                                </div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🦹‍♀️ นางปีศาจ (Sorcerer)
+                                    <span class="text-red-400">[-3]</span>
+                                </div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ฝั่งหมาป่า หาเทพคืนละ 1 คน</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🧟 ผู้ต้องคำสาป (Cursed) <span
+                                        class="text-red-400">[-3]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ชาวบ้าน แต่ถูกกัดกลายเป็นหมาป่า
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Neutral / Special -->
+                    <div class="mb-2">
+                        <h4
+                            class="text-base sm:text-lg font-bold text-purple-400 mb-2 sm:mb-3 flex items-center gap-2 pb-2 border-b border-purple-500/30">
+                            <i class="fas fa-star"></i>
+                            ฝ่ายกลาง / พิเศษ (Neutral)
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🔪 ฆาตกร (Serial Killer) <span
+                                        class="text-yellow-400">[0]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ฆ่า 1 คนทุกคืน ชนะเมื่อรอดคนเดียว
+                                </div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">👊 อันธพาล (Hoodlum) <span
+                                        class="text-yellow-400">[0]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">เลือก 2 คน ชนะเมื่อ 2 คนนี้ตาย</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🃏 คนบ้า (Fool) <span
+                                        class="text-yellow-400">[0]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ชนะเมื่อถูกโหวตออกในวันเวลา</div>
+                            </div>
+                            <div class="bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/50">
+                                <div class="font-bold text-white text-xs sm:text-sm mb-1">🕯️ คนทรง (Medium) <span
+                                        class="text-green-400">[+1]</span></div>
+                                <div class="text-[0.7rem] sm:text-xs text-gray-400">ดูบทบาทของผู้ตายคนล่าสุด</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-gray-700">
+                    <button onclick="closeRoleGuide()"
+                        class="w-full bg-green-600 hover:bg-green-500 py-2.5 sm:py-3 rounded-xl text-white text-sm sm:text-base font-bold shadow-lg shadow-green-900/50 btn-game">
+                        <i class="fas fa-check mr-2"></i>เข้าใจแล้ว
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hunter Shot Modal -->
+        <div id="hunter-shot-modal"
+            class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm fade-in">
+            <div class="game-card w-full max-w-sm rounded-2xl p-6 border border-amber-500/30">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-crosshairs text-3xl text-amber-500"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">นายพราน ยิงคนหนึ่ง</h3>
+                    <p class="text-gray-400 text-sm">เลือกผู้ที่จะถูกยิงก่อนตาย</p>
+                </div>
+
+                <div class="relative mb-6">
+                    <select id="hunter-revenge-target"
+                        class="w-full appearance-none bg-gray-900 border-2 border-gray-600 rounded-xl px-4 py-3 text-white focus:border-amber-500 focus:outline-none">
+                        <option value="">-- ไม่ยิงใคร --</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+
+                <button onclick="confirmHunterShot()"
+                    class="w-full bg-amber-600 hover:bg-amber-500 py-3 rounded-xl text-white font-bold shadow-lg shadow-amber-900/50 btn-game">ยิง!</button>
+            </div>
+        </div>
+
+        <!-- Vote Confirmation Modal -->
+        <div id="vote-confirm-modal"
+            class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
+            <div class="game-card w-full max-w-md rounded-2xl p-6 border border-yellow-500/30">
+                <div class="text-center mb-6">
+                    <div
+                        class="w-20 h-20 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-yellow-500/50">
+                        <i id="vote-confirm-icon" class="fas fa-question text-4xl text-yellow-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2">ยืนยันการโหวต</h3>
+                    <p class="text-gray-400 text-sm">กรุณาตรวจสอบข้อมูลก่อนยืนยัน</p>
+                </div>
+
+                <div id="vote-confirm-content"
+                    class="bg-black/30 rounded-xl p-4 mb-6 border border-white/10 min-h-[100px]">
+                    <!-- JS will populate this -->
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="cancelVoteConfirm()"
+                        class="flex-1 bg-gray-700 hover:bg-gray-600 py-3 rounded-xl text-white font-bold transition-colors">
+                        <i class="fas fa-times mr-2"></i>ยกเลิก
+                    </button>
+                    <button onclick="proceedVote()"
+                        class="flex-1 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 py-3 rounded-xl text-white font-bold shadow-lg shadow-red-900/50 btn-game">
+                        <i class="fas fa-check mr-2"></i>ยืนยัน
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div id="game-over-modal"
+            class="hidden fixed inset-0 z-[70] flex items-center justify-center p-2 sm:p-4 bg-black/95 backdrop-blur-md fade-in overflow-y-auto">
+            <div class="game-card w-full max-w-2xl rounded-2xl p-4 sm:p-6 md:p-8 border-2 my-auto"
+                id="game-over-container">
+                <!-- Header -->
+                <div class="text-center mb-4 sm:mb-6">
+                    <div class="text-5xl sm:text-6xl md:text-8xl mb-2 sm:mb-4" id="game-over-emoji">🎉</div>
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2" id="game-over-title">เกมจบลง!
+                    </h2>
+                    <p class="text-base sm:text-lg md:text-xl text-gray-300" id="game-over-subtitle">ฝ่ายชนะ</p>
+                </div>
+
+                <!-- Winner Info -->
+                <div id="game-over-content" class="mb-4 sm:mb-6">
+                    <!-- JS will populate this -->
+                </div>
+
+                <!-- Game Stats -->
+                <div
+                    class="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 bg-black/30 rounded-xl p-2 sm:p-3 md:p-4">
+                    <div class="text-center">
+                        <div class="text-xl sm:text-2xl md:text-3xl font-bold text-blue-400" id="stat-nights">0</div>
+                        <div class="text-[0.65rem] sm:text-xs text-gray-400 mt-1">คืนที่ผ่านไป</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xl sm:text-2xl md:text-3xl font-bold text-green-400" id="stat-survivors">0
+                        </div>
+                        <div class="text-[0.65rem] sm:text-xs text-gray-400 mt-1">ผู้รอดชีวิต</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xl sm:text-2xl md:text-3xl font-bold text-red-400" id="stat-deaths">0</div>
+                        <div class="text-[0.65rem] sm:text-xs text-gray-400 mt-1">ผู้เสียชีวิต</div>
+                    </div>
+                </div>
+
+                <!-- Survivors List -->
+                <div id="survivors-section" class="mb-4 sm:mb-6 md:mb-8">
+                    <h3
+                        class="text-base sm:text-lg md:text-xl font-bold text-white mb-2 sm:mb-3 md:mb-4 flex items-center gap-2">
+                        <i class="fas fa-users"></i>ผู้รอดชีวิต
+                    </h3>
+                    <div id="survivors-grid"
+                        class="grid gap-2 sm:gap-3 max-h-[30vh] sm:max-h-[40vh] overflow-y-auto custom-scrollbar">
+                        <!-- JS will populate this -->
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4">
+                    <button onclick="viewGameLog()"
+                        class="flex-1 bg-gray-700 hover:bg-gray-600 py-2.5 sm:py-3 rounded-xl text-white text-sm sm:text-base font-bold transition-colors">
+                        <i class="fas fa-history mr-2"></i>ดู Log
+                    </button>
+                    <button onclick="restartGame()"
+                        class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 py-2.5 sm:py-3 rounded-xl text-white text-sm sm:text-base font-bold shadow-lg shadow-purple-900/50 btn-game">
+                        <i class="fas fa-redo mr-2"></i>เริ่มเกมใหม่
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= MODERATOR SCRIPT MODAL ================= -->
+        <div id="mod-script-modal"
+            class="hidden fixed inset-0 z-[85] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in overflow-y-auto">
+            <div class="game-card w-full max-w-lg rounded-2xl p-5 border border-purple-500/30 my-auto">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-700">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fas fa-microphone text-purple-400"></i>
+                        <span>บทพูด Moderator</span>
+                    </h3>
+                    <button onclick="closeModScript()"
+                        class="w-10 h-10 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-gray-300 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-4 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1">
+                    <!-- Night Opening -->
+                    <div class="bg-purple-900/30 p-4 rounded-xl border border-purple-500/30">
+                        <div class="font-bold text-purple-300 text-sm mb-2 flex items-center gap-2">
+                            <i class="fas fa-moon"></i> เปิดกลางคืน
+                        </div>
+                        <div class="text-gray-300 text-sm leading-relaxed">
+                            "หมู่บ้านกำลังจะเข้าสู่ราตรี... <br>
+                            ทุกคนหลับตาลงและห้ามเปิด <br>
+                            หลับให้สนิท...อย่าแอบมอง"
+                        </div>
+                    </div>
+
+                    <!-- Wolf Turn -->
+                    <div class="bg-red-900/30 p-4 rounded-xl border border-red-500/30">
+                        <div class="font-bold text-red-300 text-sm mb-2 flex items-center gap-2">
+                            <i class="fas fa-paw"></i> หมาป่าตื่น
+                        </div>
+                        <div class="text-gray-300 text-sm leading-relaxed">
+                            "หมาป่าลืมตา... <br>
+                            เลือกเหยื่อที่จะกำจัดคืนนี้ <br>
+                            (หมาป่าชี้เป้าหมาย) <br>
+                            หมาป่าหลับตา..."
+                        </div>
+                    </div>
+
+                    <!-- Seer Turn -->
+                    <div class="bg-blue-900/30 p-4 rounded-xl border border-blue-500/30">
+                        <div class="font-bold text-blue-300 text-sm mb-2 flex items-center gap-2">
+                            <i class="fas fa-eye"></i> เทพพยากรณ์ตื่น
+                        </div>
+                        <div class="text-gray-300 text-sm leading-relaxed">
+                            "เทพพยากรณ์ลืมตา... <br>
+                            เลือกคนที่จะตรวจสอบ <br>
+                            (ส่ายหัว = ไม่ใช่ / พยักหน้า = ใช่) <br>
+                            เทพพยากรณ์หลับตา..."
+                        </div>
+                    </div>
+
+                    <!-- Morning -->
+                    <div class="bg-yellow-900/30 p-4 rounded-xl border border-yellow-500/30">
+                        <div class="font-bold text-yellow-300 text-sm mb-2 flex items-center gap-2">
+                            <i class="fas fa-sun"></i> เช้าวัน
+                        </div>
+                        <div class="text-gray-300 text-sm leading-relaxed">
+                            "อรุณสวัสดิ์...หมู่บ้านตื่นขึ้น <br>
+                            ลืมตาได้ทุกคน... <br><br>
+                            <span class='text-red-400'>😱 เมื่อคืน [ชื่อ] เสียชีวิต!</span> <br>
+                            <span class='text-gray-400'>หรือ</span> <br>
+                            <span class='text-green-400'>✨ เมื่อคืนทุกคนปลอดภัย!</span>"
+                        </div>
+                    </div>
+
+                    <!-- Discussion -->
+                    <div class="bg-gray-700/50 p-4 rounded-xl border border-gray-500/30">
+                        <div class="font-bold text-gray-300 text-sm mb-2 flex items-center gap-2">
+                            <i class="fas fa-comments"></i> ช่วงสนทนา
+                        </div>
+                        <div class="text-gray-300 text-sm leading-relaxed">
+                            "ตอนนี้เป็นเวลาสนทนา <br>
+                            แลกเปลี่ยนความคิดเห็น หาหมาป่า <br>
+                            มีเวลา 3 นาที เริ่ม!"
+                        </div>
+                    </div>
+
+                    <!-- Vote -->
+                    <div class="bg-red-800/30 p-4 rounded-xl border border-red-400/30">
+                        <div class="font-bold text-red-300 text-sm mb-2 flex items-center gap-2">
+                            <i class="fas fa-gavel"></i> ช่วงโหวต
+                        </div>
+                        <div class="text-gray-300 text-sm leading-relaxed">
+                            "หมดเวลาสนทนา! <br>
+                            หลับตาทุกคน... <br>
+                            นับ 1-2-3 ชี้ไปที่คนที่จะประหาร <br>
+                            1...2...3 ชี้!"
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-gray-700">
+                    <button onclick="closeModScript()"
+                        class="w-full bg-purple-600 hover:bg-purple-500 py-3 rounded-xl text-white font-bold transition-colors btn-game">
+                        <i class="fas fa-check mr-2"></i>เข้าใจแล้ว
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Modal (for general alerts) -->
+        <div id="notification-modal"
+            class="hidden fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
+            <div class="game-card w-full max-w-md rounded-2xl p-6 border border-blue-500/30">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                        id="notif-icon-container">
+                        <i id="notif-icon" class="fas fa-info-circle text-4xl text-blue-400"></i>
+                    </div>
+                    <div id="notif-message" class="text-lg text-white whitespace-pre-line">
+                        <!-- Message  here -->
+                    </div>
+                </div>
+
+                <button onclick="closeNotification()"
+                    class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-xl text-white font-bold transition-colors btn-game">
+                    <i class="fas fa-check mr-2"></i>ตกลง
+                </button>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal (for confirm dialogs) -->
+        <div id="confirm-modal"
+            class="hidden fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
+            <div class="game-card w-full max-w-md rounded-2xl p-6 border border-purple-500/30">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-question-circle text-4xl text-purple-400"></i>
+                    </div>
+                    <div id="confirm-message" class="text-lg text-white whitespace-pre-line">
+                        <!-- Message here -->
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="confirmNo()"
+                        class="flex-1 bg-gray-700 hover:bg-gray-600 py-3 rounded-xl text-white font-bold transition-colors">
+                        <i class="fas fa-times mr-2"></i>ยกเลิก
+                    </button>
+                    <button onclick="confirmYes()"
+                        class="flex-1 bg-purple-600 hover:bg-purple-500 py-3 rounded-xl text-white font-bold shadow-lg shadow-purple-900/50 btn-game">
+                        <i class="fas fa-check mr-2"></i>ยืนยัน
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    </div>
+
+    <!-- ================= PRESET NAME MODAL ================= -->
+    <div id="preset-name-modal"
+        class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[95] flex items-center justify-center p-4">
+        <div
+            class="bg-gray-900 rounded-2xl border border-yellow-500/30 w-full max-w-sm shadow-2xl shadow-yellow-900/20">
+            <div class="p-6">
+                <div class="text-center mb-6">
+                    <div class="inline-block p-4 rounded-full bg-yellow-500/20 mb-3">
+                        <i class="fas fa-bookmark text-3xl text-yellow-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">บันทึกชุดบทบาท</h3>
+                    <p class="text-gray-400 text-sm mt-1">ตั้งชื่อให้ชุดบทบาทนี้</p>
+                </div>
+
+                <input type="text" id="preset-name-input" placeholder="เช่น: 10 คน มาตรฐาน"
+                    class="w-full bg-gray-800 border-2 border-gray-600 rounded-xl px-4 py-3 text-white text-center font-bold focus:border-yellow-500 focus:outline-none focus:shadow-[0_0_15px_rgba(234,179,8,0.3)] transition-all mb-6"
+                    onkeypress="if(event.key==='Enter') confirmSavePreset()">
+
+                <div class="flex gap-3">
+                    <button onclick="closePresetNameModal()"
+                        class="flex-1 bg-gray-700 hover:bg-gray-600 py-3 rounded-xl text-gray-300 font-bold transition-colors">
+                        <i class="fas fa-times mr-2"></i>ยกเลิก
+                    </button>
+                    <button onclick="confirmSavePreset()"
+                        class="flex-1 bg-yellow-600 hover:bg-yellow-500 py-3 rounded-xl text-white font-bold shadow-lg shadow-yellow-900/50 transition-colors">
+                        <i class="fas fa-save mr-2"></i>บันทึก
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= VOTE MODAL ================= -->
+    <div id="vote-modal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm fade-in">
+        <div
+            class="game-card w-full max-w-2xl rounded-2xl p-6 border border-red-500/30 text-center relative overflow-hidden">
+
+            <!-- Phase 1: Countdown -->
+            <div id="vote-countdown-section">
+                <div
+                    class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                    <i class="fas fa-gavel text-5xl text-red-500"></i>
+                </div>
+                <h3 class="text-3xl font-bold text-white mb-2">ถึงเวลาโหวต!</h3>
+                <p class="text-gray-400 mb-8">หลับตา... เตรียมชี้ตัวผู้ต้องสงสัย</p>
+
+                <div class="relative mb-8">
+                    <div class="text-6xl font-black text-white tabular-nums countdown-number text-glow-red"
+                        id="vote-countdown">3</div>
+                    <div class="text-sm text-red-400 mt-2 font-bold tracking-widest uppercase">SECOND</div>
+                </div>
+
+                <div class="space-y-3 max-w-sm mx-auto">
+                    <button onclick="startVoteCountdown()" id="start-vote-btn"
+                        class="w-full bg-red-600 hover:bg-red-500 py-3 rounded-xl text-white font-bold transition-colors shadow-lg shadow-red-900/50 btn-game">
+                        <i class="fas fa-play mr-2"></i>เริ่มนับถอยหลัง
+                    </button>
+                    <button onclick="closeVoteModal()"
+                        class="w-full bg-gray-700 hover:bg-gray-600 py-3 rounded-xl text-white font-bold transition-colors">
+                        ยกเลิก
+                    </button>
+                </div>
+            </div>
+
+            <!-- Phase 2: Selection -->
+            <div id="vote-selection-section" class="hidden text-left fade-in">
+                <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
+                    <h3 class="text-xl font-bold text-white"><i
+                            class="fas fa-skull-crossbones mr-2 text-red-500"></i>ใครถูกโหวตออก?</h3>
+                    <div class="text-xs text-gray-400">เลือกผู้ได้รับคะแนนโหวตสูงสุด</div>
+                </div>
+
+                <div id="vote-player-grid"
+                    class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4 max-h-[50vh] overflow-y-auto custom-scrollbar pr-1">
+                    <!-- Players go here -->
+                </div>
+
+                <div class="space-y-2">
+                    <button onclick="confirmVote(null)"
+                        class="w-full bg-gray-700/50 hover:bg-gray-600 border border-gray-600 hover:border-gray-500 py-3 rounded-xl text-gray-300 font-bold transition-colors">
+                        <i class="fas fa-ban mr-2"></i>ไม่มีใครถูกโหวตออก
+                    </button>
+                    <button onclick="closeVoteModal()" class="w-full text-gray-500 hover:text-white text-sm py-2">
+                        ยกเลิก
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= SOUND SETTINGS MODAL ================= -->
+    <div id="sound-modal"
+        class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[90] flex items-center justify-center p-4">
+        <div
+            class="bg-gray-900 rounded-2xl border border-gray-700 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fas fa-volume-up text-purple-400"></i>
+                        ตั้งค่าเสียง
+                    </h3>
+                    <button onclick="closeSoundModal()" class="text-gray-400 hover:text-white text-xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Master Volume -->
+                <div class="mb-6 p-4 bg-gray-800 rounded-xl">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-white font-bold">🔊 ระดับเสียง</span>
+                        <span id="volume-display" class="text-purple-400 font-bold">100%</span>
+                    </div>
+                    <input type="range" id="master-volume" min="0" max="100" value="100"
+                        class="w-full accent-purple-500" onchange="updateVolume(this.value)">
+                    <div class="flex justify-between mt-3">
+                        <button onclick="toggleMute()" id="mute-btn"
+                            class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm">
+                            <i class="fas fa-volume-mute mr-2"></i>ปิดเสียง
+                        </button>
+                        <button onclick="testSound()"
+                            class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm">
+                            <i class="fas fa-play mr-2"></i>ทดสอบ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sound Uploads -->
+                <div class="space-y-4">
+                    <!-- Night Sound -->
+                    <div class="p-4 bg-gray-800 rounded-xl">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="text-2xl">🌙</span>
+                            <div>
+                                <span class="text-white font-bold block">เสียงกลางคืน</span>
+                                <span class="text-xs text-gray-400" id="night-sound-name">ยังไม่ได้เลือก</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <label
+                                class="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold cursor-pointer text-center">
+                                <i class="fas fa-upload mr-2"></i>เลือกไฟล์
+                                <input type="file" accept="audio/*" class="hidden"
+                                    onchange="uploadSound('night', this)">
+                            </label>
+                            <button onclick="playSound('night')"
+                                class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button onclick="removeSound('night')"
+                                class="bg-red-600/50 hover:bg-red-600 text-white px-3 py-2 rounded-lg">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Day Sound -->
+                    <div class="p-4 bg-gray-800 rounded-xl">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="text-2xl">☀️</span>
+                            <div>
+                                <span class="text-white font-bold block">เสียงกลางวัน</span>
+                                <span class="text-xs text-gray-400" id="day-sound-name">ยังไม่ได้เลือก</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <label
+                                class="flex-1 bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-bold cursor-pointer text-center">
+                                <i class="fas fa-upload mr-2"></i>เลือกไฟล์
+                                <input type="file" accept="audio/*" class="hidden" onchange="uploadSound('day', this)">
+                            </label>
+                            <button onclick="playSound('day')"
+                                class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button onclick="removeSound('day')"
+                                class="bg-red-600/50 hover:bg-red-600 text-white px-3 py-2 rounded-lg">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Death Sound -->
+                    <div class="p-4 bg-gray-800 rounded-xl">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="text-2xl">💀</span>
+                            <div>
+                                <span class="text-white font-bold block">เสียงคนตาย</span>
+                                <span class="text-xs text-gray-400" id="death-sound-name">ยังไม่ได้เลือก</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <label
+                                class="flex-1 bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold cursor-pointer text-center">
+                                <i class="fas fa-upload mr-2"></i>เลือกไฟล์
+                                <input type="file" accept="audio/*" class="hidden"
+                                    onchange="uploadSound('death', this)">
+                            </label>
+                            <button onclick="playSound('death')"
+                                class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button onclick="removeSound('death')"
+                                class="bg-red-600/50 hover:bg-red-600 text-white px-3 py-2 rounded-lg">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Vote Sound -->
+                    <div class="p-4 bg-gray-800 rounded-xl">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="text-2xl">🗳️</span>
+                            <div>
+                                <span class="text-white font-bold block">เสียงโหวต</span>
+                                <span class="text-xs text-gray-400" id="vote-sound-name">ยังไม่ได้เลือก</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <label
+                                class="flex-1 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-bold cursor-pointer text-center">
+                                <i class="fas fa-upload mr-2"></i>เลือกไฟล์
+                                <input type="file" accept="audio/*" class="hidden" onchange="uploadSound('vote', this)">
+                            </label>
+                            <button onclick="playSound('vote')"
+                                class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button onclick="removeSound('vote')"
+                                class="bg-red-600/50 hover:bg-red-600 text-white px-3 py-2 rounded-lg">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 text-center text-xs text-gray-500">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    เสียงจะถูกบันทึกใน Browser (localStorage)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="app.js"></script>
+</body>
+
+</html>

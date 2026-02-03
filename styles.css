@@ -1,0 +1,285 @@
+/* ===== Werewolf Moderator Tool - Styles ===== */
+
+/* Constants and Variables */
+:root {
+    --timer-duration: 180;
+    /* seconds */
+    --fade-duration: 400ms;
+    --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background: #0f0c29;
+    /* fallback */
+    background: -webkit-linear-gradient(to bottom, #24243e, #302b63, #0f0c29);
+    background: linear-gradient(to bottom, #24243e, #302b63, #0f0c29);
+    color: #e2e8f0;
+}
+
+/* Glassmorphism Card */
+.game-card {
+    background: rgba(17, 24, 39, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Neon Glow Text */
+.text-glow-red {
+    text-shadow: 0 0 10px rgba(255, 0, 51, 0.7);
+}
+
+.text-glow-blue {
+    text-shadow: 0 0 10px rgba(0, 210, 255, 0.7);
+}
+
+.text-glow-gold {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn var(--fade-duration) var(--transition-smooth);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.pulse-slow {
+    animation: pulseSlow 3s ease-in-out infinite;
+}
+
+@keyframes pulseSlow {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* ===== MOBILE FIRST RESPONSIVE DESIGN ===== */
+
+/* Base styles optimized for mobile */
+body {
+    padding: 0.75rem;
+}
+
+.game-card {
+    padding: 1rem;
+}
+
+/* Larger touch targets for mobile */
+button {
+    min-height: 48px;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+}
+
+select,
+input {
+    min-height: 48px;
+    font-size: 1rem;
+}
+
+/* Modal adjustments for mobile */
+.fixed .game-card {
+    max-width: 95vw;
+    margin: 0.5rem;
+}
+
+/* Vote cards - 2 columns on mobile */
+#vote-player-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.vote-card {
+    min-height: 120px;
+    padding: 0.875rem;
+}
+
+/* Game over survivors - 2 columns on mobile */
+#survivors-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+/* Readable font sizes */
+h1 {
+    font-size: 2.25rem;
+}
+
+h2 {
+    font-size: 1.75rem;
+}
+
+h3 {
+    font-size: 1.35rem;
+}
+
+.text-sm {
+    font-size: 0.9rem;
+}
+
+/* Stats grid more compact on mobile */
+.grid-cols-3 {
+    gap: 0.5rem;
+}
+
+.grid-cols-3>div {
+    padding: 0.75rem;
+}
+
+/* ===== TABLET (≥768px) ===== */
+@media (min-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+
+    .game-card {
+        padding: 1.5rem;
+    }
+
+    button {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    .fixed .game-card {
+        max-width: 85vw;
+    }
+
+    #vote-player-cards {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    #survivors-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    h1 {
+        font-size: 3rem;
+    }
+
+    h2 {
+        font-size: 2rem;
+    }
+}
+
+/* ===== DESKTOP (≥1024px) ===== */
+@media (min-width: 1024px) {
+    body {
+        padding: 1.5rem;
+    }
+
+    .game-card {
+        padding: 2rem;
+    }
+
+    .fixed .game-card {
+        max-width: 70vw;
+    }
+
+    #vote-player-cards {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+    }
+
+    #survivors-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+    }
+
+    h1 {
+        font-size: 3.5rem;
+    }
+}
+
+/* ===== TOUCH DEVICE OPTIMIZATION ===== */
+@media (hover: none) and (pointer: coarse) {
+
+    /* Ensure all interactive elements are touch-friendly */
+    button,
+    .btn-game {
+        min-height: 48px !important;
+        min-width: 48px !important;
+    }
+
+    select,
+    input {
+        min-height: 48px !important;
+        font-size: 16px !important;
+        /* Prevent iOS zoom */
+    }
+
+    .vote-card {
+        min-height: 130px !important;
+    }
+
+    /* Prevent text selection on interactive elements */
+    button,
+    .vote-card,
+    .btn-game {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    /* Larger tap targets for small icons */
+    button i {
+        font-size: 1.1em;
+    }
+}
+
+/* Game Button */
+.btn-game {
+    transition: all 0.1s;
+    border-bottom: 4px solid rgba(0, 0, 0, 0.3);
+}
+
+.btn-game:active {
+    transform: translateY(2px);
+    border-bottom: 0px solid transparent;
+}
